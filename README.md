@@ -1,27 +1,16 @@
 Lab 4
 ================
 
-<p style="color:rgb(182,18,27);font-family:corbel">
+### Econ B2000, MA Econometrics
 
-Econ B2000, MA Econometrics
+### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
 
-</p>
-
-<p style="color:rgb(182,18,27);font-family:corbel">
-
-Kevin R Foster, the Colin Powell School at the City College of New York,
-CUNY
-
-</p>
-
-<p style="color:rgb(182,18,27);font-family:corbel">
-
-Fall 2020
-
-</p>
+### Fall 2021
 
 For this lab, we finally do some regression models to explain wages. We
 want to understand how important is a college degree (and what major).
+These sort of regressions are commonly called “Mincer” models after
+Jacob Mincer who developed them.
 
 Form a group. Groups should prepare a 4-min presentation by one of the
 group members about their experiment process and results. You get 45 min
@@ -136,8 +125,8 @@ restrictions to put on the dataset (eg just prime age, just females,
 just college degree, whatever).
 
 Explain your results, giving details about the estimation and providing
-any relevant graphics. What are the changes from previous regression on
-state-level averages and why might this be so? How do changes in
-specification (e.g. logs) change the estimated coefficients? What are
+any relevant graphics. What are the changes from what you’d previously
+found (with k-nn or averages) and why might this be so? How do changes
+in specification (e.g. logs) change the estimated coefficients? What are
 some relevant predicted values? Do those seem sensible? What additional
 information would be useful? Impress me.
