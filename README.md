@@ -5,21 +5,24 @@ Lab 4
 
 ### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
 
-### Fall 2021
+### Fall 2022
 
-For this lab, we finally do some regression models to explain wages. We
-want to understand how important is a college degree (and what major).
-These sort of regressions are commonly called “Mincer” models after
-Jacob Mincer who developed them.
+For this lab, we do some regression models to explain wages. We want to
+understand how important is a college degree (and what major). These
+sort of regressions are commonly called “Mincer” models after Jacob
+Mincer who developed them.
+
+We’ll use the ACS NY data so load that up to begin,
+*acs2017_ny_data.RData*.
 
 Form a group. Groups should prepare a 4-min presentation by one of the
-group members about their experiment process and results. You get 45 min
+group members about their experiment process and results. You get 85 min
 to prepare. Next homework assignment will ask you to go deeper.
 
 Make sure you’re stepping up your coding – at minimum, by now you should
 have your code as R-Script (in top left panel of R Studio) so that you
 can easily see what you run (CTRL-Enter is an easy shortcut). If you get
-signficicant errors then stop and re-run your code from a fresh start
+significant errors then stop and re-run your code from a fresh start
 (clear memory, re-load data) so that you don’t pile one mistake on top
 of another. When you submit homework, I’ll want to see a file with your
 code and another with the output from that code. It would be even better
@@ -43,11 +46,11 @@ working year round, fulltime. Otherwise the regression would be trying
 to explain why so many people make zero wages despite so many
 qualifications. (Think through: if you include retirees in the data and
 estimate a linear model of age affecting wage, what would you expect for
-the sign of the coefficient?) Of course when you look at college major,
-you’re looking at only people with at least a college degree but you can
-code that for yourself.
+the sign of the coefficient on age?) Of course when you look at college
+major, you’re looking at only people with at least a college degree but
+you can code that for yourself.
 
-Make sure you run *summary(dat\_use)* to check for obvious mistakes.
+Make sure you run *summary(dat_use)* to check for obvious mistakes.
 Maybe some crosstabs to also look.
 
 First, *before running a regression,* consider what variables should be
@@ -111,13 +114,16 @@ Try both *lm(INCWAGE \~ …* and *lm(log(INCWAGE) \~ …* Compare mean of
 predicted values of first version with exp(x) mean of predicted values
 of second version. Discuss.
 
-Finally, always, always, ALWAYS **\!\!** remember this part,
+Finally, always, always, ALWAYS **!!** remember this part,
 
 ``` r
 detach()
 ```
 
-You might do that multiple times, if you were careless previously…
+You might do that multiple times, if you were careless previously. Or if
+you get sick of worrying about what you’ve attached, get into the (very
+good!) habit of using more verbose labels, for example dat_use$INCWAGE
+and passing data to the lm() function.
 
 Try some more linear regressions. Explain if there is a plausible causal
 link from X variables to Y and not the reverse. Explain what additional
