@@ -5,9 +5,9 @@ Homework 5 from Lab 4
 
 ### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
 
-### Fall 2022
+### Fall 2023
 
-### Due 8am EST Friday Oct 7
+### Due 8am EST Friday Oct 6
 
 *Each student should submit a separate assignment, even if it is an
 identical computer file to the rest of your study group. When submitting
