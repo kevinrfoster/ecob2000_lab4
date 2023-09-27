@@ -5,7 +5,7 @@ Lab 4
 
 ### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
 
-### Fall 2022
+### Fall 2023
 
 For this lab, we do some regression models to explain wages. We want to
 understand how important is a college degree (and what major). These
@@ -34,11 +34,8 @@ As you begin the analysis, you should first consider what subgroup to
 use – for example, you could run code like this,
 
 ``` r
-attach(acs2017_ny)
-use_varb <- (AGE >= 25) & (AGE <= 55) & (LABFORCE == 2) & (WKSWORK2 > 4) & (UHRSWORK >= 35)
-dat_use <- subset(acs2017_ny,use_varb) # 
-detach()
-attach(dat_use)
+use_varb <- (acs2017_ny$AGE >= 25) & (acs2017_ny$AGE <= 55) & (acs2017_ny$LABFORCE == 2) & (acs2017_ny$WKSWORK2 > 4) & (acs2017_ny$UHRSWORK >= 35)
+dat_use <- subset(acs2017_ny,use_varb) 
 ```
 
 This selects people 25-55 (often called prime age), in labor force,
@@ -61,12 +58,12 @@ and not the reverse?
 Now try a linear regression, with wage as the dependent variable, a
 dummy for major, and other variables of your choice.
 
-Here is some sample code,
+Here is some sample code, (not including college major)
 
 ``` r
-model_temp1 <- lm(INCWAGE ~ AGE + female + AfAm + Asian + Amindian + race_oth + Hispanic + educ_hs + educ_somecoll + educ_college + educ_advdeg)
+model_temp1 <- lm(INCWAGE ~ AGE + female + AfAm + Asian + Amindian + race_oth + Hispanic + educ_hs + educ_somecoll + educ_college + educ_advdeg, data = dat_use)
 summary(model_temp1)
-plot(model_temp1)
+
 # maybe get fancy
 require(stargazer)
 stargazer(model_temp1, type = "text")
@@ -84,7 +81,7 @@ suggested in the AER text),
 
 ``` r
 # subset in order to plot...
-NNobs <- length(INCWAGE)
+NNobs <- length(dat_use$INCWAGE)
 set.seed(12345) # just so you can replicate and get same "random" choices
 graph_obs <- (runif(NNobs) < 0.1) # so something like just 1/10 as many obs
 dat_graph <-subset(dat_use,graph_obs)  
@@ -94,7 +91,7 @@ plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha
 plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(0,150000), data = dat_graph)
 # discus what you see in this plot
 
-# change this line to fit your regression
+# change this line to fit your choices about explanatory variables
 to_be_predicted2 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian = 0, Amindian = 1, race_oth = 1, Hispanic = 1, educ_hs = 0, educ_somecoll = 0, educ_college = 1, educ_advdeg = 0)
 to_be_predicted2$yhat <- predict(model_temp1, newdata = to_be_predicted2)
 
@@ -110,20 +107,9 @@ p-value, and confidence interval.
 You might show how heteroskedasticity-consistent standard errors, as
 with *coeftest(model1,vcovHC)*, would affect each of these.
 
-Try both *lm(INCWAGE \~ …* and *lm(log(INCWAGE) \~ …* Compare mean of
+Try both *lm(INCWAGE ~ …* and *lm(log(INCWAGE) ~ …* Compare mean of
 predicted values of first version with exp(x) mean of predicted values
 of second version. Discuss.
-
-Finally, always, always, ALWAYS **!!** remember this part,
-
-``` r
-detach()
-```
-
-You might do that multiple times, if you were careless previously. Or if
-you get sick of worrying about what you’ve attached, get into the (very
-good!) habit of using more verbose labels, for example dat_use$INCWAGE
-and passing data to the lm() function.
 
 Try some more linear regressions. Explain if there is a plausible causal
 link from X variables to Y and not the reverse. Explain what additional
