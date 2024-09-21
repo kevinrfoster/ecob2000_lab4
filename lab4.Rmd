@@ -1,45 +1,83 @@
 ---
 title: "Lab 4"
-output: github_document
+output: html_document
 ---
 
 ### Econ B2000, MA Econometrics
 ### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
-### Fall 2023
+### Fall 2024
 
+Start in small groups and consider a very simple model, where we consider to what degree a student's previous grade predicts their subsequent grade, for instance in Principles of Microeconomics and then in Intermediate Microeconomics.
 
-For this lab, we do some regression models to explain wages. We want to understand how important is a college degree (and what major). These sort of regressions are commonly called "Mincer" models after Jacob Mincer who developed them.
+$$
+SubsequentGrade = f(PreviousGrade) + \epsilon 
+$$
+With the group, please sketch what you would expect that function to look like. Is it reasonable for that to be a line? Would you think it had some curve? Would you expect it to be an increasing function? If it were a line, what would you expect to be reasonable values of alpha and beta here?
 
-We'll use the ACS NY data so load that up to begin, *acs2017_ny_data.RData*.
+$$
+SubsequentGrade = \alpha + \beta PreviousGrade + \epsilon 
+$$
 
-Form a group. Groups should prepare a 4-min presentation by one of the group members about their experiment process and results. You get 85 min to prepare. Next homework assignment will ask you to go deeper.
+Each group will talk about their proposed model.
+
+Next, groups will create linear regression models of wages, in an attempt to understand the importance of a college degree. These sort of regressions are commonly called "Mincer" models after Jacob Mincer who developed them.
+
+We will use the Household Pulse Survey data. Which is not ideal since earnings are grouped together -- but the tradeoff would be to reacquaint yourself with a different dataset.
+
+Groups should prepare a 4-min presentation by one of the group members about their experiment process and results. You get 85 min to prepare. Next homework assignment will ask you to go deeper.
 
 Make sure you're stepping up your coding -- at minimum, by now you should have your code as R-Script (in top left panel of R Studio) so that you can easily see what you run (CTRL-Enter is an easy shortcut). If you get significant errors then stop and re-run your code from a fresh start (clear memory, re-load data) so that you don't pile one mistake on top of another. When you submit homework, I'll want to see a file with your code and another with the output from that code. It would be even better to submit an R-Markdown file with code and text, where text tells the story clearly, along with that output -- but I understand that not everybody is that far along yet.
 
 As you begin the analysis, you should first consider what subgroup to use -- for example, you could run code like this,
 
 ```{r eval = FALSE}
-use_varb <- (acs2017_ny$AGE >= 25) & (acs2017_ny$AGE <= 55) & (acs2017_ny$LABFORCE == 2) & (acs2017_ny$WKSWORK2 > 4) & (acs2017_ny$UHRSWORK >= 35)
-dat_use <- subset(acs2017_ny,use_varb) 
+prime_age_laborforce_data <- Household_Pulse_data %>% filter(ANYWORK == "yes employment in last 7 days" &
+                                                          Age >= 25 & Age <= 55)
+
 ```
 
-This selects people 25-55 (often called prime age), in labor force, working year round, fulltime. Otherwise the regression would be trying to explain why so many people make zero wages despite so many qualifications. (Think through: if you include retirees in the data and estimate a linear model of age affecting wage, what would you expect for the sign of the coefficient on age?) Of course when you look at college major, you're looking at only people with at least a college degree but you can code that for yourself.
+This selects people 25-55 (often called prime age) who are working. Otherwise the regression would be trying to explain why so many people make zero wages despite so many qualifications. (Think through: if you include retirees in the data and estimate a linear model of age affecting wage, what would you expect for the sign of the coefficient on age?) 
 
-Make sure you run *summary(dat_use)* to check for obvious mistakes. Maybe some crosstabs to also look.
+Make sure you run *summary()* to check for obvious mistakes. Maybe some crosstabs to also look.
+
+You might want to have a variable for a person's gender. That's a bit complicated in this data, since they ask gender assigned at birth as well as how a person would currently describe their gender. Try this code
+
+```{r eval=FALSE}
+xtabs(~ Household_Pulse_data$GENID_DESCRIBE + Household_Pulse_data$EGENID_BIRTH)
+
+```
+
+That shows that many of the NA responses to GENID_DESCRIBE were assigned male or female at birth, so they could be plausibly assigned to their birth gender.
+
+```{r eval=FALSE}
+Household_Pulse_data$Gender <- Household_Pulse_data$GENID_DESCRIBE
+
+Household_Pulse_data$Gender[Household_Pulse_data$GENID_DESCRIBE == "NA" & 
+                              Household_Pulse_data$EGENID_BIRTH == "male"] <- "male" 
+Household_Pulse_data$Gender[Household_Pulse_data$GENID_DESCRIBE == "NA" & 
+                              Household_Pulse_data$EGENID_BIRTH == "female"] <- "female" 
+
+xtabs(~ Household_Pulse_data$GENID_DESCRIBE + Household_Pulse_data$Gender)
+# you might -- Census sometimes does! -- also recode people who give different 
+# answers to current and born gender to be "transgender" but I'll leave that to your discretion
+
+```
+
 
 First, *before running a regression,* consider what variables should be in your model. What are some of the important factors that influence a person's wage? Is there a plausible causal link from X variables to Y and not the reverse?
 
-Now try a linear regression, with wage as the dependent variable, a dummy for major, and other variables of your choice. 
+Now try a linear regression, with wage as the dependent variable, education, age, and other variables of your choice. 
 
-Here is some sample code, (not including college major)
+Here is some sample code, 
 ```{r eval = FALSE}
-model_temp1 <- lm(INCWAGE ~ AGE + female + AfAm + Asian + Amindian + race_oth + Hispanic + educ_hs + educ_somecoll + educ_college + educ_advdeg, data = dat_use)
-summary(model_temp1)
+model_1 <- lm(income_midpoint ~ Age + RHISPANIC + RRACE + EEDUC, data = prime_age_laborforce_data)
+summary(model_1)
 
 # maybe get fancy
-require(stargazer)
-stargazer(model_temp1, type = "text")
-# play with stargazer instead of summary, it can look nicer!
+library(modelsummary)
+modelsummary(model_1, stars = TRUE, gof_map = c("nobs", "r.squared"))
+
+
 ```
 
 For many of the hypothesis tests, you'll want the AER package
@@ -50,21 +88,24 @@ require(AER)
 Show a plot of regression line with data points, something like this (as suggested in the AER text),
 ```{r eval = FALSE}
 # subset in order to plot...
-NNobs <- length(dat_use$INCWAGE)
+NNobs <- length(prime_age_laborforce_data$income_midpoint)
 set.seed(12345) # just so you can replicate and get same "random" choices
 graph_obs <- (runif(NNobs) < 0.1) # so something like just 1/10 as many obs
-dat_graph <-subset(dat_use,graph_obs)  
+dat_graph <-subset(prime_age_laborforce_data,graph_obs)  
 
-plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), data = dat_graph)
+plot(income_midpoint ~ jitter(Age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), 
+     data = dat_graph)
 # ^^ that looks like crap since Wages are soooooooo skew!  So try to find some sensible ylim = c(0, ??)
-plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(0,150000), data = dat_graph)
-# discus what you see in this plot
+plot(income_midpoint ~ jitter(Age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), 
+     ylim = c(0,120000), data = dat_graph)
+# does that help much?
 
 # change this line to fit your choices about explanatory variables
-to_be_predicted2 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian = 0, Amindian = 1, race_oth = 1, Hispanic = 1, educ_hs = 0, educ_somecoll = 0, educ_college = 1, educ_advdeg = 0)
-to_be_predicted2$yhat <- predict(model_temp1, newdata = to_be_predicted2)
+to_be_predicted2 <- data.frame(Age = 25:55, RHISPANIC = "Hispanic", 
+                               RRACE = "Black", EEDUC = "adv deg")
+to_be_predicted2$yhat <- predict(model_1, newdata = to_be_predicted2)
 
-lines(yhat ~ AGE, data = to_be_predicted2)
+lines(yhat ~ Age, data = to_be_predicted2)
 
 ```
 Create some more, for different X-values.
@@ -73,7 +114,7 @@ Carefully explain the hypothesis tests of each coefficient and all of the coeffi
 
 You might show how heteroskedasticity-consistent standard errors, as with *coeftest(model1,vcovHC)*, would affect each of these.
 
-Try both *lm(INCWAGE ~ ...* and *lm(log(INCWAGE) ~ ...* Compare mean of predicted values of first version with exp(x) mean of predicted values of second version. Discuss. 
+Try both *lm(income_midpoint ~ ...* and *lm(log(income_midpoint) ~ ...* Compare mean of predicted values of first version with exp(x) mean of predicted values of second version. Discuss. 
 
 Try some more linear regressions. Explain if there is a plausible causal link from X variables to Y and not the reverse. Explain what additional restrictions to put on the dataset (eg just prime age, just females, just college degree, whatever). 
 
