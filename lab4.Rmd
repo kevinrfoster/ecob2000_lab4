@@ -1,11 +1,11 @@
 ---
 title: "Lab 4"
-output: html_document
+output: github_document
 ---
 
 ### Econ B2000, MA Econometrics
 ### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
-### Fall 2024
+### Fall 2025
 
 Start in small groups and consider a very simple model, where we consider to what degree a student's previous grade predicts their subsequent grade, for instance in Principles of Microeconomics and then in Intermediate Microeconomics.
 
@@ -22,7 +22,7 @@ Each group will talk about their proposed model.
 
 Next, groups will create linear regression models of wages, in an attempt to understand the importance of a college degree. These sort of regressions are commonly called "Mincer" models after Jacob Mincer who developed them.
 
-We will use the Household Pulse Survey data. Which is not ideal since earnings are grouped together -- but the tradeoff would be to reacquaint yourself with a different dataset.
+We will use the Household Pulse Survey data. Which is not ideal since earnings are grouped together -- but the tradeoff would be to reacquaint yourself with a different dataset. (later in the course)
 
 Groups should prepare a 4-min presentation by one of the group members about their experiment process and results. You get 85 min to prepare. Next homework assignment will ask you to go deeper.
 
@@ -31,38 +31,14 @@ Make sure you're stepping up your coding -- at minimum, by now you should have y
 As you begin the analysis, you should first consider what subgroup to use -- for example, you could run code like this,
 
 ```{r eval = FALSE}
-prime_age_laborforce_data <- Household_Pulse_data %>% filter(ANYWORK == "yes employment in last 7 days" &
+prime_age_laborforce_data <- d_HHP2020_24 %>% filter(!is.na(work_kind) &
                                                           Age >= 25 & Age <= 55)
 
 ```
 
 This selects people 25-55 (often called prime age) who are working. Otherwise the regression would be trying to explain why so many people make zero wages despite so many qualifications. (Think through: if you include retirees in the data and estimate a linear model of age affecting wage, what would you expect for the sign of the coefficient on age?) 
 
-Make sure you run *summary()* to check for obvious mistakes. Maybe some crosstabs to also look.
-
-You might want to have a variable for a person's gender. That's a bit complicated in this data, since they ask gender assigned at birth as well as how a person would currently describe their gender. Try this code
-
-```{r eval=FALSE}
-xtabs(~ Household_Pulse_data$GENID_DESCRIBE + Household_Pulse_data$EGENID_BIRTH)
-
-```
-
-That shows that many of the NA responses to GENID_DESCRIBE were assigned male or female at birth, so they could be plausibly assigned to their birth gender.
-
-```{r eval=FALSE}
-Household_Pulse_data$Gender <- Household_Pulse_data$GENID_DESCRIBE
-
-Household_Pulse_data$Gender[Household_Pulse_data$GENID_DESCRIBE == "NA" & 
-                              Household_Pulse_data$EGENID_BIRTH == "male"] <- "male" 
-Household_Pulse_data$Gender[Household_Pulse_data$GENID_DESCRIBE == "NA" & 
-                              Household_Pulse_data$EGENID_BIRTH == "female"] <- "female" 
-
-xtabs(~ Household_Pulse_data$GENID_DESCRIBE + Household_Pulse_data$Gender)
-# you might -- Census sometimes does! -- also recode people who give different 
-# answers to current and born gender to be "transgender" but I'll leave that to your discretion
-
-```
-
+Make sure you run `summary()` to check for obvious mistakes. Maybe some crosstabs to also look.
 
 First, *before running a regression,* consider what variables should be in your model. What are some of the important factors that influence a person's wage? Is there a plausible causal link from X variables to Y and not the reverse?
 
@@ -70,7 +46,9 @@ Now try a linear regression, with wage as the dependent variable, education, age
 
 Here is some sample code, 
 ```{r eval = FALSE}
-model_1 <- lm(income_midpoint ~ Age + RHISPANIC + RRACE + EEDUC, data = prime_age_laborforce_data)
+
+model_1 <- lm(income_midpoint ~ Age + Gender + Education + Race + Hispanic, 
+              data = prime_age_laborforce_data)
 summary(model_1)
 
 # maybe get fancy
@@ -82,39 +60,30 @@ modelsummary(model_1, stars = TRUE, gof_map = c("nobs", "r.squared"))
 
 For many of the hypothesis tests, you'll want the AER package
 ```{r eval = FALSE}
-require(AER)
+library(AER)
 ```
 
-Show a plot of regression line with data points, something like this (as suggested in the AER text),
-```{r eval = FALSE}
-# subset in order to plot...
-NNobs <- length(prime_age_laborforce_data$income_midpoint)
-set.seed(12345) # just so you can replicate and get same "random" choices
-graph_obs <- (runif(NNobs) < 0.1) # so something like just 1/10 as many obs
-dat_graph <-subset(prime_age_laborforce_data,graph_obs)  
+Consider some predicted values.
 
-plot(income_midpoint ~ jitter(Age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), 
-     data = dat_graph)
-# ^^ that looks like crap since Wages are soooooooo skew!  So try to find some sensible ylim = c(0, ??)
-plot(income_midpoint ~ jitter(Age, factor = 2), pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), 
-     ylim = c(0,120000), data = dat_graph)
-# does that help much?
+```{r eval = FALSE}
 
 # change this line to fit your choices about explanatory variables
-to_be_predicted2 <- data.frame(Age = 25:55, RHISPANIC = "Hispanic", 
-                               RRACE = "Black", EEDUC = "adv deg")
-to_be_predicted2$yhat <- predict(model_1, newdata = to_be_predicted2)
-
-lines(yhat ~ Age, data = to_be_predicted2)
+to_be_predicted1 <- data.frame(Age = 25:55, Gender = "female",
+                               Education = "adv degree",
+                               Race = "Black", 
+                               Hispanic = "Hispanic")
+to_be_predicted1$yhat <- predict(model_1, newdata = to_be_predicted1)
 
 ```
 Create some more, for different X-values.
 
+Note that R makes it really really easy to run a regression model. You should quickly be thinking like an economist and noting that easy things don't get much value -- you'll need to be able to do hard things, to create value.
+
 Carefully explain the hypothesis tests of each coefficient and all of the coefficients jointly. For each coefficient, explain the t-stat, p-value, and confidence interval.
 
-You might show how heteroskedasticity-consistent standard errors, as with *coeftest(model1,vcovHC)*, would affect each of these.
+You might show how heteroskedasticity-consistent standard errors, as with `coeftest(model1,vcovHC)`, would affect each of these.
 
-Try both *lm(income_midpoint ~ ...* and *lm(log(income_midpoint) ~ ...* Compare mean of predicted values of first version with exp(x) mean of predicted values of second version. Discuss. 
+Try both `lm(income_midpoint ~ ...` and `lm(log(income_midpoint) ~ ...` Compare mean of predicted values of first version with exp(x) mean of predicted values of second version. Discuss. 
 
 Try some more linear regressions. Explain if there is a plausible causal link from X variables to Y and not the reverse. Explain what additional restrictions to put on the dataset (eg just prime age, just females, just college degree, whatever). 
 

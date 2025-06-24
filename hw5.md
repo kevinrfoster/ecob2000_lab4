@@ -5,9 +5,9 @@ Homework 5 from Lab 4
 
 ### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
 
-### Fall 2024
+### Fall 2025
 
-### Due 8am EST Friday Oct 11
+### Due 8am EST Friday Oct 10 - no class next week so you get extra time
 
 *Each student should submit a separate assignment, even if it is an
 identical computer file to the rest of your study group. When submitting
@@ -22,4 +22,5 @@ the beginning of your homework.*
     variables. Please provide both a p-value for the hypothesis test and
     a confidence interval and include a short paragraph explaining each
     test (carefully noting what is the null hypothesis) and explaining
-    the results of that test.
+    the results of that test. The Healy text gives suggestions about
+    plotting coefficients, maybe try some of those?
