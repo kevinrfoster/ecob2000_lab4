@@ -5,7 +5,7 @@ Lab 4
 
 ### Kevin R Foster, the Colin Powell School at the City College of New York, CUNY
 
-### Fall 2025
+### Fall 2026
 
 Start in small groups and consider a very simple model, where we
 consider to what degree a student’s previous grade predicts their
